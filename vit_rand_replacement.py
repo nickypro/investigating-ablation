@@ -5,7 +5,7 @@ from taker.prune import prune_random
 from tqdm import tqdm
 import wandb
 
-def run_random_replacement(m: Model, c: PruningConfig, sampled_text: str):
+def run_random_replacement(m: Model, c: PruningConfig, sampled_img):
     # Prepare data logging
     history = RunDataHistory(c.datasets)
     wandb.init(
@@ -16,7 +16,11 @@ def run_random_replacement(m: Model, c: PruningConfig, sampled_text: str):
     wandb.config.update(c.to_dict(), allow_val_change=True)
 
     # Get the random activations we will be replacing with
-    preout_rand = m.get_attn_pre_out_activations(sampled_text)
+
+    inputs = m.processor(sampled_img, return_tensors="pt")
+    inputs = inputs.to(m.device)
+    logits = m.predictor(**inputs).logits.unsqueeze(0)
+    preout_rand = m.get_attn_pre_out_activations(text_activations=[0,0,0,0])
 
     # evaluate the modified model
     if c.run_pre_test:
@@ -34,7 +38,7 @@ def run_random_replacement(m: Model, c: PruningConfig, sampled_text: str):
 
         # update the pruned neurons to be resampled
         preout_rand_masked = m.run_inverse_masking(preout_rand, "attn_pre_out")
-        m.update_actadd(preout_rand_masked.reshape(m.cfg.n_layers, m.limit, m.cfg.d_model), "attn_pre_out")
+        m.update_actadd(preout_rand_masked.reshape(m.cfg.n_layers, -1, m.cfg.d_model), "attn_pre_out")
 
         # evaluate the modified model
         data = evaluate_all(m, c.eval_sample_size,
@@ -45,9 +49,7 @@ def run_random_replacement(m: Model, c: PruningConfig, sampled_text: str):
     return history
 
 import numpy as np
-
 rand_image = np.random.randint(0, 255, [3, 244, 244])
-print(m.processor(rand_image)["pixel_values"][0].shape)
 
 c = PruningConfig(
     model_repo = "google/vit-base-patch16-224",
@@ -58,7 +60,7 @@ c = PruningConfig(
     focus = "imagenet-1k",
     cripple="imagenet-1k-birds",
     collection_sample_size = 1e4,
-    eval_sample_size = 1e4,
+    eval_sample_size = 1e3,
     ff_frac = 0.00,
     attn_frac = 0.10,
     n_steps = 10,
@@ -75,8 +77,17 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True  # To ensure that CUDA selects deterministic algorithms.
     torch.backends.cudnn.benchmark = False
 
-seed = 42
-set_seed(seed)
-
 m = Model(c.model_repo, limit=c.token_limit, dtype=c.dtype)
+
+set_seed(42)
+run_random_replacement(m, c, rand_image)
+
+set_seed(123)
+m.register_masks()
+m.register_actadds()
+run_random_replacement(m, c, rand_image)
+
+set_seed(456)
+m.register_masks()
+m.register_actadds()
 run_random_replacement(m, c, rand_image)
