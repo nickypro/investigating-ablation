@@ -1,0 +1,93 @@
+{
+    "os": "Linux-5.15.0-25-generic-x86_64-with-glibc2.35",
+    "python": "3.10.4",
+    "heartbeatAt": "2024-02-28T17:00:06.073184",
+    "startedAt": "2024-02-28T17:00:04.990354",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "google/vit-base-patch16-224",
+        "--focus",
+        "imagenet-1k",
+        "--cripple",
+        "imagenet-1k-birds",
+        "--dtype",
+        "fp32",
+        "--eval_sample_size",
+        "10000",
+        "--collection_sample_size",
+        "100000",
+        "--attn_frac",
+        "0.10",
+        "--ff_frac",
+        "0.00",
+        "--ff_scoring",
+        "random",
+        "--attn_scoring",
+        "random",
+        "--wandb_project",
+        "nicky-peaks-test",
+        "--recalculate_activations",
+        "False",
+        "--name",
+        "roberta 5% peak",
+        "--attn_offset_mode",
+        "peak"
+    ],
+    "state": "running",
+    "program": "/home/ubuntu/aisc-peak-activations/ben/prune_30.py",
+    "codePath": "ben/prune_30.py",
+    "git": {
+        "remote": "https://github.com/nickypro/aisc-peak-activations",
+        "commit": "615cba999481e45a9f23f06e467c3179f71c5749"
+    },
+    "email": "bpas992@gmail.com",
+    "root": "/home/ubuntu/aisc-peak-activations",
+    "host": "aisc-ben",
+    "username": "ubuntu",
+    "executable": "/home/ubuntu/aisc-peak-activations/.venv/bin/python",
+    "cpu_count": 2,
+    "cpu_count_logical": 4,
+    "cpu_freq": {
+        "current": 2400.16,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2400.16,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2400.16,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2400.16,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2400.16,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "total": 78.68101501464844,
+        "used": 38.68992614746094
+    },
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3080",
+            "memory_total": 10737418240
+        }
+    ],
+    "memory": {
+        "total": 11.713939666748047
+    }
+}

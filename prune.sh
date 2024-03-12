@@ -59,9 +59,10 @@ prune_mushrooms() {
 	--name "$@"
 }
 
+        #--name "opt1.3b random attn 10% mode offset negative" \
 prune_quick_test() {
     #poetry run python prune_30.py nickypro/tinyllama-15m \
-    poetry run python prune_30.py facebook/opt-1.3b \
+    poetry run python ./ben/prune_30.py facebook/opt-1.3b \
         --wandb_project skylar-tests \
         --focus pile_codeless \
         --cripple code \
@@ -69,7 +70,7 @@ prune_quick_test() {
         --svd_attn False \
         --attn_mode pre-out \
         --token_limit 1000 \
-        --name "opt1.3b random attn 10% mode offset negative" \
+        --name "test from ben's new env" \
         --attn_frac 0.10 \
         --ff_frac 0.00 \
         --ff_scoring random \

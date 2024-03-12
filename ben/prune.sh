@@ -45,13 +45,13 @@ prune_quick_test() {
         --svd_attn False \
         --attn_mode pre-out \
         --token_limit 1000 \
-        --name "opt1.3b random attn 10% kde offset" \
-        --attn_frac 0.10 \
+        --name "opt1.3b random attn 5% new peak bucket offset -- 1k token limit, 1e5 eval, 1e4 collection" \
+        --attn_frac 0.05 \
         --ff_frac 0.00 \
         --ff_scoring random \
         --attn_scoring random \
-        --eval_sample_size 10000 \
-        --collection_sample_size 10000 \
+        --eval_sample_size 100000 \
+        --collection_sample_size 1000 \
         --recalculate_activations True
 }
 prune_pyt() {
@@ -156,9 +156,10 @@ echo "Starting..."
 #prune_mushrooms "vit b 3% 3% noniter" --attn_frac 0.03 --ff_frac 0.03 --n_steps 1
 #prune_rocket "vit b 1% 1% noniter" --attn_frac 0.01 --ff_frac 0.01
 #prune_vit_test "vit quick test"
+prune_quick_test 
 #ben_prune_vit "vit revamped test"
 #ben_prune_vit "vit revamped test"
 #ben_prune_vit "vit revamped test"
-nicky_prune_vit "roberta 5% peak" --attn_offset_mode "peak"
-nicky_prune_vit "roberta 5% zero" --attn_offset_mode "zero"
-nicky_prune_vit "roberta 5% mean" --attn_offset_mode "mean"
+#nicky_prune_vit "roberta 5% peak" --attn_offset_mode "peak"
+#nicky_prune_vit "roberta 5% zero" --attn_offset_mode "zero"
+#nicky_prune_vit "roberta 5% mean" --attn_offset_mode "mean"

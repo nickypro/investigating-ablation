@@ -109,8 +109,6 @@ def get_bucket_peaks(activations):
         activations_float32 = activations
 
     # Prepare for histogram computation
-    min_val = activations_float32.min()
-    max_val = activations_float32.max()
     bins = 100
 
     # Initialize an empty tensor to hold the peak values
@@ -119,6 +117,9 @@ def get_bucket_peaks(activations):
     # Compute the histogram and find the peak for each neuron in every layer
     for i in range(activations_float32.size()[0]):  # Assuming the first dimension is layers
         for j in range(activations_float32.size()[1]):  # Assuming the second dimension is neurons
+            min_val = activations_float32[i, j].min()
+            max_val = activations_float32[i, j].max()
+
             hist = torch.histc(activations_float32[i, j], bins=bins, min=min_val, max=max_val)
             peak_bin = hist.argmax()
             # Compute the center value of the peak bin
@@ -387,7 +388,7 @@ def prune_random_and_evaluate( opt: Model,
 
 def run_pruning(c: PruningConfig):
     #TODO: delete this
-    print("Starting pruning in _____TAKER____")
+    print("Starting pruning in ben's _____TAKER____")
     print(c)
     # Initilaise Model and show details about model
     opt = Model(

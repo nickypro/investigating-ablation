@@ -302,7 +302,7 @@ def prune_random_and_evaluate( opt: Model,
 
 def run_pruning(c: PruningConfig):
     #TODO: delete this
-    print("Starting pruning in _____TAKER____")
+    print("Starting pruning in Non-Ben prune.py")
     print(c)
     # Initilaise Model and show details about model
     opt = Model(
