@@ -100,6 +100,8 @@ def get_mean_offsets(activations):
     return mode_values
 
 def get_bucket_peaks(activations):
+    
+    print('GETTING BUCKETS AT OUTER LEVEL')
     # Check if the activations tensor is of type torch.float16
     if activations.dtype == torch.float16:
         # Convert to torch.float32 for histogram calculation
@@ -110,6 +112,8 @@ def get_bucket_peaks(activations):
 
     # Prepare for histogram computation
     bins = 100
+    #min_val = activations.min()
+    #max_val = activations.max()
 
     # Initialize an empty tensor to hold the peak values
     peak_values_float32 = torch.empty(activations_float32.size()[:-1], device=activations_float32.device, dtype=torch.float32)
@@ -119,6 +123,8 @@ def get_bucket_peaks(activations):
         for j in range(activations_float32.size()[1]):  # Assuming the second dimension is neurons
             min_val = activations_float32[i, j].min()
             max_val = activations_float32[i, j].max()
+            
+            print(min_val)
 
             hist = torch.histc(activations_float32[i, j], bins=bins, min=min_val, max=max_val)
             peak_bin = hist.argmax()

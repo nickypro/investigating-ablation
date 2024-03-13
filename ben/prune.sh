@@ -37,20 +37,21 @@ prune_vit_test() {
 
 prune_quick_test() {
     #poetry run python prune_30.py nickypro/tinyllama-15m \
-    poetry run python prune_30.py facebook/opt-1.3b \
-        --wandb_project bens-tests \
-        --focus pile_codeless \
-        --cripple code \
+    poetry run python prune_30.py google/vit-base-patch16-224 \
+        --wandb_project skylar-tests \
+	    --focus imagenet-1k --cripple imagenet-1k-birds \
+            --dtype fp32 \
         --run_pre_test True \
         --svd_attn False \
         --attn_mode pre-out \
         --token_limit 1000 \
-        --name "opt1.3b random attn 5% new peak bucket offset -- 1k token limit, 1e5 eval, 1e4 collection" \
-        --attn_frac 0.05 \
+        --name "vit random attn 10% neuron-level peak ablation 1k eval 1k collection" \
+        --attn_frac 0.10 \
+        --attn_offset_mode "peak" \
         --ff_frac 0.00 \
         --ff_scoring random \
         --attn_scoring random \
-        --eval_sample_size 100000 \
+        --eval_sample_size 1000 \
         --collection_sample_size 1000 \
         --recalculate_activations True
 }
@@ -156,10 +157,11 @@ echo "Starting..."
 #prune_mushrooms "vit b 3% 3% noniter" --attn_frac 0.03 --ff_frac 0.03 --n_steps 1
 #prune_rocket "vit b 1% 1% noniter" --attn_frac 0.01 --ff_frac 0.01
 #prune_vit_test "vit quick test"
-prune_quick_test 
 #ben_prune_vit "vit revamped test"
 #ben_prune_vit "vit revamped test"
 #ben_prune_vit "vit revamped test"
 #nicky_prune_vit "roberta 5% peak" --attn_offset_mode "peak"
 #nicky_prune_vit "roberta 5% zero" --attn_offset_mode "zero"
 #nicky_prune_vit "roberta 5% mean" --attn_offset_mode "mean"
+
+prune_quick_test "vit random attn 10% neuron-level peak ablation 1k eval 1k collection"
