@@ -1,0 +1,101 @@
+{
+    "os": "Linux-5.15.0-25-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "heartbeatAt": "2024-03-15T07:38:46.388260",
+    "startedAt": "2024-03-15T07:38:45.103520",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "roberta-large",
+        "--wandb_project",
+        "skylar-tests",
+        "--focus",
+        "pile_codeless",
+        "--cripple",
+        "code",
+        "--dtype",
+        "fp32",
+        "--run_pre_test",
+        "True",
+        "--svd_attn",
+        "False",
+        "--attn_mode",
+        "pre-out",
+        "--token_limit",
+        "512",
+        "--name",
+        "roberta random attn 10% bayesian peak ablation 1k eval 10k collection",
+        "--attn_frac",
+        "0.1",
+        "--attn_offset_mode",
+        "peak",
+        "--ff_frac",
+        "0.00",
+        "--ff_scoring",
+        "random",
+        "--attn_scoring",
+        "random",
+        "--eval_sample_size",
+        "1000",
+        "--collection_sample_size",
+        "10000",
+        "--recalculate_activations",
+        "True"
+    ],
+    "state": "running",
+    "program": "/home/ubuntu/aisc-peak-activations/ben/prune_30.py",
+    "codePath": "ben/prune_30.py",
+    "git": {
+        "remote": "https://github.com/nickypro/aisc-peak-activations.git",
+        "commit": "6f030ee0d4a608520e8f6b44ea3e02cd0b7c8c82"
+    },
+    "email": "work@nicky.pro",
+    "root": "/home/ubuntu/aisc-peak-activations",
+    "host": "aisc-sky",
+    "username": "ubuntu",
+    "executable": "/home/ubuntu/aisc-peak-activations/.venv/bin/python",
+    "cpu_count": 2,
+    "cpu_count_logical": 4,
+    "cpu_freq": {
+        "current": 2400.09,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2400.09,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2400.09,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2400.09,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2400.09,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "total": 78.68101501464844,
+        "used": 63.87388610839844
+    },
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3080",
+            "memory_total": 10737418240
+        }
+    ],
+    "memory": {
+        "total": 11.713939666748047
+    }
+}

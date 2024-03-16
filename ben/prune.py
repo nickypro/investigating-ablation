@@ -101,7 +101,7 @@ def get_mean_offsets(activations):
 
 def get_bucket_peaks(activations):
     
-    print('GETTING BUCKETS AT OUTER LEVEL')
+    print('GETTING BUCKETS AT INNER LEVEL')
     # Check if the activations tensor is of type torch.float16
     if activations.dtype == torch.float16:
         # Convert to torch.float32 for histogram calculation
@@ -112,8 +112,8 @@ def get_bucket_peaks(activations):
 
     # Prepare for histogram computation
     bins = 100
-    #min_val = activations.min()
-    #max_val = activations.max()
+    #min_val = activations_float32.min()
+    #max_val = activations_float32.max()
 
     # Initialize an empty tensor to hold the peak values
     peak_values_float32 = torch.empty(activations_float32.size()[:-1], device=activations_float32.device, dtype=torch.float32)
@@ -140,6 +140,184 @@ def get_bucket_peaks(activations):
         peak_values = peak_values_float32
 
     return peak_values
+
+def get_dual_bucket_peaks(activations):
+    print('GETTING BUCKETS AT INNER LEVEL')
+    # Check if the activations tensor is of type torch.float16
+    if activations.dtype == torch.float16:
+        # Convert to torch.float32 for histogram calculation
+        activations_float32 = activations.float()
+    else:
+        # Use the original tensor if it's already in a supported data type
+        activations_float32 = activations
+
+    # Prepare for histogram computation with both coarse and fine bins
+    coarse_bins = 100  # Fewer bins for the coarse filtering step
+    fine_bins = 100  # More bins for the detailed peak finding step
+
+    peak_values_float32 = torch.empty(activations_float32.size()[:-1], device=activations_float32.device, dtype=torch.float32)
+    
+    for i in range(activations_float32.size()[0]):  # Assuming the first dimension is layers
+        for j in range(activations_float32.size()[1]):  # Assuming the second dimension is neurons
+            min_val = activations_float32[i, j].min()
+            max_val = activations_float32[i, j].max()
+
+            # Coarse histogram to filter out noise
+            coarse_hist = torch.histc(activations_float32[i, j], bins=coarse_bins, min=min_val, max=max_val)
+            coarse_peak_bin = coarse_hist.argmax()
+            coarse_bin_width = (max_val - min_val) / coarse_bins
+            coarse_peak_min = min_val + coarse_bin_width * coarse_peak_bin
+            coarse_peak_max = coarse_peak_min + coarse_bin_width
+
+            # Fine histogram within the identified coarse peak region
+            fine_hist = torch.histc(activations_float32[i, j], bins=fine_bins, min=coarse_peak_min, max=coarse_peak_max)
+            fine_peak_bin = fine_hist.argmax()
+            fine_bin_width = coarse_bin_width / fine_bins
+            peak_value = coarse_peak_min + fine_bin_width * (fine_peak_bin.float() + 0.5)
+            peak_values_float32[i, j] = peak_value
+
+    # If the original tensor was torch.float16, convert the result back to torch.float16
+    if activations.dtype == torch.float16:
+        peak_values = peak_values_float32.half()
+    else:
+        peak_values = peak_values_float32
+
+    return peak_values
+
+def get_averaged_bucket_peaks(activations):
+    print('GETTING BUCKETS AT INNER LEVEL')
+    # Check if the activations tensor is of type torch.float16
+    if activations.dtype == torch.float16:
+        # Convert to torch.float32 for histogram calculation
+        activations_float32 = activations.float()
+    else:
+        # Use the original tensor if it's already in a supported data type
+        activations_float32 = activations
+
+    # Prepare for histogram computation with both coarse and fine bins
+    coarse_bins = 1000  # Coarse resolution
+    fine_bins = 10000  # Fine resolution
+
+    peak_values_float32 = torch.empty(activations_float32.size()[:-1], device=activations_float32.device, dtype=torch.float32)
+    
+    for i in range(activations_float32.size()[0]):  # Assuming the first dimension is layers
+        for j in range(activations_float32.size()[1]):  # Assuming the second dimension is neurons
+            min_val = activations_float32[i, j].min()
+            max_val = activations_float32[i, j].max()
+
+            # Calculate histograms for both resolutions
+            coarse_hist = torch.histc(activations_float32[i, j], bins=coarse_bins, min=min_val, max=max_val)
+            fine_hist = torch.histc(activations_float32[i, j], bins=fine_bins, min=min_val, max=max_val)
+
+            # Scale coarse histogram to fine resolution for direct comparison
+            # This involves expanding each coarse bin count equally among the corresponding set of fine bins
+            scale_factor = fine_bins // coarse_bins
+            coarse_hist_scaled = coarse_hist.repeat_interleave(scale_factor)
+
+            # In case fine_bins is not a perfect multiple of coarse_bins, adjust the length of the scaled histogram
+            if coarse_hist_scaled.size(0) > fine_hist.size(0):
+                coarse_hist_scaled = coarse_hist_scaled[:fine_hist.size(0)]
+
+            # Average the histograms
+            averaged_hist = (coarse_hist_scaled.float() + fine_hist.float()) / 2
+
+            # Find the peak in the averaged histogram (you might choose another metric to identify the peak)
+            peak_bin = averaged_hist.argmax()
+            bin_width = (max_val - min_val) / fine_bins
+            peak_value = min_val + bin_width * (peak_bin.float() + 0.5)
+            peak_values_float32[i, j] = peak_value
+
+    # If the original tensor was torch.float16, convert the result back to torch.float16
+    if activations.dtype == torch.float16:
+        peak_values = peak_values_float32.half()
+    else:
+        peak_values = peak_values_float32
+
+    return peak_values
+
+
+import torch
+import torch.nn.functional as F
+
+def apply_gaussian_smoothing(tensor, kernel_size, sigma):
+    # Make sure the kernel size is odd to have a valid center position
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+    
+    # Create a Gaussian kernel
+    x = torch.linspace(-kernel_size // 2, kernel_size // 2, kernel_size)
+    gaussian_kernel = torch.exp(-0.5 * (x / sigma).pow(2))
+    gaussian_kernel /= gaussian_kernel.sum()
+    
+    # Add batch and channel dimensions
+    gaussian_kernel = gaussian_kernel.view(1, 1, -1).to(tensor.device)
+    
+    # Manual padding to ensure compatibility with conv1d
+    pad_size = kernel_size // 2
+    tensor_padded = F.pad(tensor.view(1, 1, -1), (pad_size, pad_size), mode='replicate')
+    
+    # Apply convolution
+    smoothed_tensor = F.conv1d(tensor_padded, gaussian_kernel)
+    
+    return smoothed_tensor.view(-1)
+
+def get_bucket_peaks_averaged_with_smoothing(activations, kernel_size=5, sigma=1):
+    # Your setup code remains unchanged
+    
+    peak_values_float32 = torch.empty(activations.size()[:-1], device=activations.device, dtype=torch.float32)
+    
+    for i in range(activations.size()[0]):  # Layers
+        for j in range(activations.size()[1]):  # Neurons
+            min_val = activations[i, j].min()
+            max_val = activations[i, j].max()
+
+            fine_hist = torch.histc(activations[i, j], bins=100, min=min_val, max=max_val)
+
+            # Apply Gaussian smoothing to the fine histogram
+            smoothed_hist = apply_gaussian_smoothing(fine_hist, kernel_size, sigma)
+
+            peak_bin = smoothed_hist.argmax()
+            bin_width = (max_val - min_val) / 100
+            peak_value = min_val + bin_width * (peak_bin.float() + 0.5)
+            peak_values_float32[i, j] = peak_value
+
+    # Conversion and return logic remains the same
+    return peak_values_float32
+
+def get_global_min_max(activations):
+    """Get the global minimum and maximum activation values across all neurons in all layers."""
+    return activations.min().item(), activations.max().item()
+
+def compute_histogram(activations, global_min, global_max, bins=1000):
+    """Compute histogram with global min and max to ensure consistent bin sizes."""
+    hist = torch.histc(activations, bins=bins, min=global_min, max=global_max)
+    return hist
+
+def estimate_peaks_with_layer_prior(activations, bins=1000):
+    """Estimate neuron peaks using the entire layer's distribution as a prior."""
+    global_min, global_max = get_global_min_max(activations)
+    peak_values = torch.empty_like(activations[:, :, 0])  # Assuming activations shape is [layers, neurons, activations]
+
+    for i in range(activations.size()[0]):  # Iterating over layers
+        # Compute the layer-wide histogram with consistent bin edges
+        layer_activations = activations[i].reshape(-1)  # Flatten layer activations
+        layer_hist = compute_histogram(layer_activations, global_min, global_max, bins)
+
+        for j in range(activations.size()[1]):  # Iterating over neurons in the layer
+            neuron_activations = activations[i, j]
+            # Compute neuron-specific histogram with the same global min/max and bins
+            neuron_hist = compute_histogram(neuron_activations, global_min, global_max, bins)
+            # Directly use neuron_hist for peak estimation if layer-wide information isn't strictly necessary
+            # Or adjust neuron_hist using layer-wide information as previously intended
+            peak_bin = neuron_hist.argmax()
+            bin_width = (global_max - global_min) / bins
+            peak_value = global_min + bin_width * (peak_bin.float() + 0.5)
+            peak_values[i, j] = peak_value
+
+    return peak_values
+
+
+
 
 def get_kde_peaks(activations, bandwidth=0.1):
     layers, neurons, _ = activations.shape  # Assuming activations is a 3D tensor of shape [layers, neurons, activations]
@@ -444,7 +622,7 @@ def run_pruning(c: PruningConfig):
             #print("Saved Offsets")
 
             #TODO: do I need to make everything negative in offsets first?
-            offsets = get_bucket_peaks(raw_attn_activations)
+            offsets = get_mean_offsets(raw_attn_activations)
             opt.update_mask_offsets("attn_pre_out", offsets)
             print("finished calculating offsets for random scoring!")
         

@@ -35,26 +35,7 @@ prune_vit_test() {
         --recalculate_activations False
 }
 
-prune_quick_test() {
-    #poetry run python prune_30.py nickypro/tinyllama-15m \
-    poetry run python prune_30.py google/vit-base-patch16-224 \
-        --wandb_project skylar-tests \
-	    --focus imagenet-1k --cripple imagenet-1k-birds \
-            --dtype fp32 \
-        --run_pre_test True \
-        --svd_attn False \
-        --attn_mode pre-out \
-        --token_limit 1000 \
-        --name "vit random attn 10% neuron-level peak ablation 1k eval 1k collection" \
-        --attn_frac 0.10 \
-        --attn_offset_mode "peak" \
-        --ff_frac 0.00 \
-        --ff_scoring random \
-        --attn_scoring random \
-        --eval_sample_size 1000 \
-        --collection_sample_size 1000 \
-        --recalculate_activations True
-}
+
 prune_pyt() {
     poetry run python prune_30.py EleutherAI/pythia-1.4b \
         --wandb_project new-method-compare --focus pile_codeless \
@@ -151,6 +132,28 @@ nicky_prune_roberta() {
 	--name "$@"
 }
 
+
+prune_quick_test() {
+    poetry run python prune_30.py roberta-large \
+        --wandb_project skylar-tests \
+        --focus pile_codeless \
+        --cripple code \
+           --dtype fp32 \
+        --run_pre_test True \
+        --svd_attn False \
+        --attn_mode pre-out \
+        --token_limit 512 \
+        --name "roberta random attn 10% mean ablation 1k eval 10k collection" \
+        --attn_frac 0.1 \
+        --attn_offset_mode "peak" \
+        --ff_frac 0.00 \
+        --ff_scoring random \
+        --attn_scoring random \
+        --eval_sample_size 1000 \
+        --collection_sample_size 10000 \
+        --recalculate_activations True
+}
+
 echo "Starting..."
 # prune_vit "vit l 2% 2% noniter" --attn_frac 0.02 --ff_frac 0.02
 # prune_vit "vit l 5% 0% random"  --attn_frac 0.02 --ff_frac 0.02 --attn_scoring random --ff_scoring random
@@ -164,4 +167,4 @@ echo "Starting..."
 #nicky_prune_vit "roberta 5% zero" --attn_offset_mode "zero"
 #nicky_prune_vit "roberta 5% mean" --attn_offset_mode "mean"
 
-prune_quick_test "vit random attn 10% neuron-level peak ablation 1k eval 1k collection"
+prune_quick_test "roberta random attn 10% mean ablation 1k eval 10k collection"

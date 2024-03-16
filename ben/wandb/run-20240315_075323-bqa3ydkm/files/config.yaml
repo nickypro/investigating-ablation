@@ -1,0 +1,151 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.13.11
+    framework: huggingface
+    huggingface_version: 4.38.1
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.10.12
+    start_time: 1710489203.291726
+    t:
+      1:
+      - 1
+      - 11
+      - 49
+      - 51
+      - 55
+      - 71
+      2:
+      - 1
+      - 11
+      - 49
+      - 51
+      - 55
+      - 71
+      3:
+      - 13
+      - 23
+      4: 3.10.12
+      5: 0.13.11
+      6: 4.38.1
+      8:
+      - 5
+additional_datasets:
+  desc: null
+  value: []
+attn_eps:
+  desc: null
+  value: 0.0001
+attn_frac:
+  desc: null
+  value: 0.1
+attn_mode:
+  desc: null
+  value: pre-out
+attn_offset_mode:
+  desc: null
+  value: peak
+attn_prune_heads:
+  desc: null
+  value: false
+attn_prune_heads_mode:
+  desc: null
+  value: mean
+attn_scoring:
+  desc: null
+  value: random
+collection_sample_size:
+  desc: null
+  value: 10000.0
+cripple:
+  desc: null
+  value: code
+datasets:
+  desc: null
+  value:
+  - pile_codeless
+  - code
+do_attn_mean_offset:
+  desc: null
+  value: false
+dtype:
+  desc: null
+  value: fp32
+eval_sample_size:
+  desc: null
+  value: 1000.0
+ff_eps:
+  desc: null
+  value: 0.001
+ff_frac:
+  desc: null
+  value: 0.0
+ff_offset_mode:
+  desc: null
+  value: zero
+ff_scoring:
+  desc: null
+  value: random
+focus:
+  desc: null
+  value: pile_codeless
+mask_fn:
+  desc: null
+  value: step
+misc:
+  desc: null
+  value: null
+model_device:
+  desc: null
+  value: null
+model_repo:
+  desc: null
+  value: roberta-large
+model_size:
+  desc: null
+  value: roberta-large
+n_steps:
+  desc: null
+  value: 10
+recalculate_activations:
+  desc: null
+  value: true
+run_pre_test:
+  desc: null
+  value: true
+save:
+  desc: null
+  value: false
+save_subdirectory:
+  desc: null
+  value: null
+scoring_normalization:
+  desc: null
+  value: orig
+svd_attn:
+  desc: null
+  value: false
+svd_combine_biases:
+  desc: null
+  value: false
+token_limit:
+  desc: null
+  value: 512
+topk:
+  desc: null
+  value: 10
+use_accelerator:
+  desc: null
+  value: true
+wandb_entity:
+  desc: null
+  value: seperability
+wandb_project:
+  desc: null
+  value: skylar-tests
+wandb_run_name:
+  desc: null
+  value: roberta random attn 10% mean ablation 1k eval 10k collection
